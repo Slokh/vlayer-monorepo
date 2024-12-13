@@ -131,7 +131,7 @@ impl Serde<STORAGE_BLOCK_LEN> for StorageWithinBlock<1> {
 
 /** STATE PROOF INPUT **/
 
-global STATE_NODES_LEN_M = 5320; // MAX_NODE_LEN * MAX_ACCOUNT_DEPTH_NO_LEAF_M
+global STATE_NODES_LEN_M = 4256; // MAX_NODE_LEN * MAX_ACCOUNT_DEPTH_NO_LEAF_M
 
 pub fn serialize_state_nodes(nodes: [Node; MAX_ACCOUNT_DEPTH_NO_LEAF_M]) -> [Field; STATE_NODES_LEN_M] {
     let mut data: BoundedVec<Field, STATE_NODES_LEN_M> = BoundedVec::new();

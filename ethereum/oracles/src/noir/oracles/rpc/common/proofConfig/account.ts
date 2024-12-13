@@ -9,6 +9,6 @@ const MAX_VALUE_CONTENT_LEN =
   getMaxRlpEncodedSize(BYTES32_LEN) /* Storage root */ +
   getMaxRlpEncodedSize(BYTES32_LEN); /* Code hash */
 const MAX_VALUE_LEN: u32 = getMaxRlpEncodedSize(MAX_VALUE_CONTENT_LEN);
-const MAX_PROOF_LEVELS = 11; // Empirically correct values to be determined after we scan ethereum state trie.
+const MAX_PROOF_LEVELS = 9; // Empirically correct values to be determined after we scan ethereum state trie.
 
 export const accountProofConfig = getProofConfig(KEY_LEN, MAX_VALUE_LEN, MAX_PROOF_LEVELS);
