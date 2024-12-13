@@ -11,7 +11,7 @@ use crate::account::{
 };
 use crate::account_with_storage::{
     MAX_PREFIXED_KEY_NIBBLE_LEN as STORAGE_MAX_PREFIXED_KEY_NIBBLE_LEN, MAX_STORAGE_DEPTH_NO_LEAF_M,
-    MAX_STORAGE_VALUE_LEN, MAX_STORAGE_LEAF_LEN
+    MAX_STORAGE_VALUE_LEN, MAX_STORAGE_LEAF_LEN, OLD_MAX_STORAGE_DEPTH_NO_LEAF_M
 };
 use crate::misc::{fragment::Fragment, types::{BYTES32_LENGTH, Bytes32, ADDRESS_LENGTH, Address}};
 use crate::uint256::U256;
@@ -201,7 +201,7 @@ impl Serde<STATE_PROOF_INPUT_LEN_M> for ProofInput<ACCOUNT_MAX_PREFIXED_KEY_NIBB
 
 /** STORAGE PROOF INPUT **/
 
-global STORAGE_NODES_LEN_M: u32 = 3724; // MAX_NODE_LEN * MAX_STORAGE_DEPTH_NO_LEAF_M
+global STORAGE_NODES_LEN_M: u32 = 3192; // MAX_NODE_LEN * MAX_STORAGE_DEPTH_NO_LEAF_M
 
 pub fn serialize_storage_nodes(nodes: [Node; MAX_STORAGE_DEPTH_NO_LEAF_M]) -> [Field; STORAGE_NODES_LEN_M] {
     let mut data: BoundedVec<Field, STORAGE_NODES_LEN_M> = BoundedVec::new();
@@ -248,6 +248,76 @@ impl Serde<STORAGE_PROOF_LEN_M> for Proof<MAX_STORAGE_DEPTH_NO_LEAF_M, MAX_STORA
 global STORAGE_PROOF_INPUT_LEN_M: u32 = 3360; // STORAGE_MAX_PREFIXED_KEY_NIBBLE_LEN + MAX_STORAGE_VALUE_LEN + STORAGE_PROOF_LEN_M
 
 impl Serde<STORAGE_PROOF_INPUT_LEN_M> for ProofInput<STORAGE_MAX_PREFIXED_KEY_NIBBLE_LEN, MAX_STORAGE_VALUE_LEN, MAX_STORAGE_DEPTH_NO_LEAF_M, MAX_STORAGE_LEAF_LEN> {
+    fn serialize(self) -> [Field; STORAGE_PROOF_INPUT_LEN_M] {
+        let mut data: BoundedVec<Field, STORAGE_PROOF_INPUT_LEN_M> = BoundedVec::new();
+        data.extend_from_array(self.key.serialize());
+        data.extend_from_array(self.value.serialize());
+        data.extend_from_array(self.proof.serialize());
+        data.storage
+    }
+
+    fn deserialize(data: [Field; STORAGE_PROOF_INPUT_LEN_M]) -> Self {
+        let mut fragment = Fragment::from_array(data);
+        let key = fragment.pop_front_array().deserialize();
+        let value = fragment.pop_front_array().deserialize();
+        let proof = Serde::deserialize(fragment.pop_front_array());
+        ProofInput {
+            key,
+            value,
+            proof
+        }
+    }
+}
+
+/** STORAGE PROOF INPUT OLD **/
+
+global STORAGE_NODES_LEN_M: u32 = 3724; // MAX_NODE_LEN * OLD_MAX_STORAGE_DEPTH_NO_LEAF_M
+
+pub fn serialize_storage_nodes(nodes: [Node; OLD_MAX_STORAGE_DEPTH_NO_LEAF_M]) -> [Field; STORAGE_NODES_LEN_M] {
+    let mut data: BoundedVec<Field, STORAGE_NODES_LEN_M> = BoundedVec::new();
+    for i in 0..OLD_MAX_STORAGE_DEPTH_NO_LEAF_M {
+        data.extend_from_array(nodes[i].serialize());
+    }
+    data.storage
+}
+
+pub fn deserialize_storage_nodes(data: [Field; STORAGE_NODES_LEN_M]) -> [Node; OLD_MAX_STORAGE_DEPTH_NO_LEAF_M] {
+    let mut result: Fragment<OLD_MAX_STORAGE_DEPTH_NO_LEAF_M, Node> = Fragment::empty();
+    let mut fragment = Fragment::from_array(data);
+    for _ in 0..OLD_MAX_STORAGE_DEPTH_NO_LEAF_M {
+        let node: Node = fragment.pop_front_array().deserialize();
+        result.push_back(node);
+    }
+    result.data
+}
+
+global STORAGE_PROOF_LEN_M: u32 = 3262; // STORAGE_NODES_LEN_M + MAX_STORAGE_LEAF_LEN + 1
+
+impl Serde<STORAGE_PROOF_LEN_M> for Proof<OLD_MAX_STORAGE_DEPTH_NO_LEAF_M, MAX_STORAGE_LEAF_LEN> {
+    fn serialize(self) -> [Field; STORAGE_PROOF_LEN_M] {
+        let mut data: BoundedVec<Field, STORAGE_PROOF_LEN_M> = BoundedVec::new();
+        data.extend_from_array(serialize_storage_nodes(self.nodes));
+        data.extend_from_array(self.leaf.serialize());
+        data.push(self.depth as Field);
+        data.storage
+    }
+
+    fn deserialize(data: [Field; STORAGE_PROOF_LEN_M]) -> Self {
+        let mut fragment = Fragment::from_array(data);
+        let nodes: [Node; OLD_MAX_STORAGE_DEPTH_NO_LEAF_M] = deserialize_storage_nodes(fragment.pop_front_array());
+        let leaf = fragment.pop_front_array().deserialize();
+        let depth = fragment.pop_front() as u64;
+        Proof {
+            nodes,
+            leaf,
+            depth,
+        }
+    }
+}
+
+global STORAGE_PROOF_INPUT_LEN_M: u32 = 3360; // STORAGE_MAX_PREFIXED_KEY_NIBBLE_LEN + MAX_STORAGE_VALUE_LEN + STORAGE_PROOF_LEN_M
+
+impl Serde<STORAGE_PROOF_INPUT_LEN_M> for ProofInput<STORAGE_MAX_PREFIXED_KEY_NIBBLE_LEN, MAX_STORAGE_VALUE_LEN, OLD_MAX_STORAGE_DEPTH_NO_LEAF_M, MAX_STORAGE_LEAF_LEN> {
     fn serialize(self) -> [Field; STORAGE_PROOF_INPUT_LEN_M] {
         let mut data: BoundedVec<Field, STORAGE_PROOF_INPUT_LEN_M> = BoundedVec::new();
         data.extend_from_array(self.key.serialize());
