@@ -201,7 +201,7 @@ impl Serde<STATE_PROOF_INPUT_LEN_M> for ProofInput<ACCOUNT_MAX_PREFIXED_KEY_NIBB
 
 /** STORAGE PROOF INPUT **/
 
-global STORAGE_NODES_LEN_M: u32 = 3192; // MAX_NODE_LEN * MAX_STORAGE_DEPTH_NO_LEAF_M
+global STORAGE_NODES_LEN_M: u32 = 3724; // MAX_NODE_LEN * MAX_STORAGE_DEPTH_NO_LEAF_M
 
 pub fn serialize_storage_nodes(nodes: [Node; MAX_STORAGE_DEPTH_NO_LEAF_M]) -> [Field; STORAGE_NODES_LEN_M] {
     let mut data: BoundedVec<Field, STORAGE_NODES_LEN_M> = BoundedVec::new();
