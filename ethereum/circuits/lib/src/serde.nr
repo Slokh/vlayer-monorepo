@@ -273,7 +273,7 @@ impl Serde<STORAGE_PROOF_INPUT_LEN_M> for ProofInput<STORAGE_MAX_PREFIXED_KEY_NI
 
 global STORAGE_NODES_LEN_M: u32 = 3724; // MAX_NODE_LEN * OLD_MAX_STORAGE_DEPTH_NO_LEAF_M
 
-pub fn serialize_storage_nodes(nodes: [Node; OLD_MAX_STORAGE_DEPTH_NO_LEAF_M]) -> [Field; STORAGE_NODES_LEN_M] {
+pub fn serialize_storage_nodes_old(nodes: [Node; OLD_MAX_STORAGE_DEPTH_NO_LEAF_M]) -> [Field; STORAGE_NODES_LEN_M] {
     let mut data: BoundedVec<Field, STORAGE_NODES_LEN_M> = BoundedVec::new();
     for i in 0..OLD_MAX_STORAGE_DEPTH_NO_LEAF_M {
         data.extend_from_array(nodes[i].serialize());
@@ -281,7 +281,7 @@ pub fn serialize_storage_nodes(nodes: [Node; OLD_MAX_STORAGE_DEPTH_NO_LEAF_M]) -
     data.storage
 }
 
-pub fn deserialize_storage_nodes(data: [Field; STORAGE_NODES_LEN_M]) -> [Node; OLD_MAX_STORAGE_DEPTH_NO_LEAF_M] {
+pub fn deserialize_storage_nodes_old(data: [Field; STORAGE_NODES_LEN_M]) -> [Node; OLD_MAX_STORAGE_DEPTH_NO_LEAF_M] {
     let mut result: Fragment<OLD_MAX_STORAGE_DEPTH_NO_LEAF_M, Node> = Fragment::empty();
     let mut fragment = Fragment::from_array(data);
     for _ in 0..OLD_MAX_STORAGE_DEPTH_NO_LEAF_M {
@@ -296,7 +296,7 @@ global STORAGE_PROOF_LEN_M: u32 = 3262; // STORAGE_NODES_LEN_M + MAX_STORAGE_LEA
 impl Serde<STORAGE_PROOF_LEN_M> for Proof<OLD_MAX_STORAGE_DEPTH_NO_LEAF_M, MAX_STORAGE_LEAF_LEN> {
     fn serialize(self) -> [Field; STORAGE_PROOF_LEN_M] {
         let mut data: BoundedVec<Field, STORAGE_PROOF_LEN_M> = BoundedVec::new();
-        data.extend_from_array(serialize_storage_nodes(self.nodes));
+        data.extend_from_array(serialize_storage_nodes_old(self.nodes));
         data.extend_from_array(self.leaf.serialize());
         data.push(self.depth as Field);
         data.storage
@@ -304,7 +304,7 @@ impl Serde<STORAGE_PROOF_LEN_M> for Proof<OLD_MAX_STORAGE_DEPTH_NO_LEAF_M, MAX_S
 
     fn deserialize(data: [Field; STORAGE_PROOF_LEN_M]) -> Self {
         let mut fragment = Fragment::from_array(data);
-        let nodes: [Node; OLD_MAX_STORAGE_DEPTH_NO_LEAF_M] = deserialize_storage_nodes(fragment.pop_front_array());
+        let nodes: [Node; OLD_MAX_STORAGE_DEPTH_NO_LEAF_M] = deserialize_storage_nodes_old(fragment.pop_front_array());
         let leaf = fragment.pop_front_array().deserialize();
         let depth = fragment.pop_front() as u64;
         Proof {
