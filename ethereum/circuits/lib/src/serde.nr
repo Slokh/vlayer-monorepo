@@ -271,17 +271,17 @@ impl Serde<STORAGE_PROOF_INPUT_LEN_M> for ProofInput<STORAGE_MAX_PREFIXED_KEY_NI
 
 /** STORAGE PROOF INPUT OLD **/
 
-global STORAGE_NODES_LEN_M: u32 = 3724; // MAX_NODE_LEN * OLD_MAX_STORAGE_DEPTH_NO_LEAF_M
+global STORAGE_NODES_LEN_M_OLD: u32 = 3724; // MAX_NODE_LEN * OLD_MAX_STORAGE_DEPTH_NO_LEAF_M
 
-pub fn serialize_storage_nodes_old(nodes: [Node; OLD_MAX_STORAGE_DEPTH_NO_LEAF_M]) -> [Field; STORAGE_NODES_LEN_M] {
-    let mut data: BoundedVec<Field, STORAGE_NODES_LEN_M> = BoundedVec::new();
+pub fn serialize_storage_nodes_old(nodes: [Node; OLD_MAX_STORAGE_DEPTH_NO_LEAF_M]) -> [Field; STORAGE_NODES_LEN_M_OLD] {
+    let mut data: BoundedVec<Field, STORAGE_NODES_LEN_M_OLD> = BoundedVec::new();
     for i in 0..OLD_MAX_STORAGE_DEPTH_NO_LEAF_M {
         data.extend_from_array(nodes[i].serialize());
     }
     data.storage
 }
 
-pub fn deserialize_storage_nodes_old(data: [Field; STORAGE_NODES_LEN_M]) -> [Node; OLD_MAX_STORAGE_DEPTH_NO_LEAF_M] {
+pub fn deserialize_storage_nodes_old(data: [Field; STORAGE_NODES_LEN_M_OLD]) -> [Node; OLD_MAX_STORAGE_DEPTH_NO_LEAF_M] {
     let mut result: Fragment<OLD_MAX_STORAGE_DEPTH_NO_LEAF_M, Node> = Fragment::empty();
     let mut fragment = Fragment::from_array(data);
     for _ in 0..OLD_MAX_STORAGE_DEPTH_NO_LEAF_M {
@@ -291,18 +291,18 @@ pub fn deserialize_storage_nodes_old(data: [Field; STORAGE_NODES_LEN_M]) -> [Nod
     result.data
 }
 
-global STORAGE_PROOF_LEN_M: u32 = 3262; // STORAGE_NODES_LEN_M + MAX_STORAGE_LEAF_LEN + 1
+global STORAGE_PROOF_LEN_M_OLD: u32 = 3262; // STORAGE_NODES_LEN_M_OLD + MAX_STORAGE_LEAF_LEN + 1
 
-impl Serde<STORAGE_PROOF_LEN_M> for Proof<OLD_MAX_STORAGE_DEPTH_NO_LEAF_M, MAX_STORAGE_LEAF_LEN> {
-    fn serialize(self) -> [Field; STORAGE_PROOF_LEN_M] {
-        let mut data: BoundedVec<Field, STORAGE_PROOF_LEN_M> = BoundedVec::new();
+impl Serde<STORAGE_PROOF_LEN_M_OLD> for Proof<OLD_MAX_STORAGE_DEPTH_NO_LEAF_M, MAX_STORAGE_LEAF_LEN> {
+    fn serialize(self) -> [Field; STORAGE_PROOF_LEN_M_OLD] {
+        let mut data: BoundedVec<Field, STORAGE_PROOF_LEN_M_OLD> = BoundedVec::new();
         data.extend_from_array(serialize_storage_nodes_old(self.nodes));
         data.extend_from_array(self.leaf.serialize());
         data.push(self.depth as Field);
         data.storage
     }
 
-    fn deserialize(data: [Field; STORAGE_PROOF_LEN_M]) -> Self {
+    fn deserialize(data: [Field; STORAGE_PROOF_LEN_M_OLD]) -> Self {
         let mut fragment = Fragment::from_array(data);
         let nodes: [Node; OLD_MAX_STORAGE_DEPTH_NO_LEAF_M] = deserialize_storage_nodes_old(fragment.pop_front_array());
         let leaf = fragment.pop_front_array().deserialize();
@@ -315,18 +315,18 @@ impl Serde<STORAGE_PROOF_LEN_M> for Proof<OLD_MAX_STORAGE_DEPTH_NO_LEAF_M, MAX_S
     }
 }
 
-global STORAGE_PROOF_INPUT_LEN_M: u32 = 3360; // STORAGE_MAX_PREFIXED_KEY_NIBBLE_LEN + MAX_STORAGE_VALUE_LEN + STORAGE_PROOF_LEN_M
+global STORAGE_PROOF_INPUT_LEN_M_OLD: u32 = 3360; // STORAGE_MAX_PREFIXED_KEY_NIBBLE_LEN + MAX_STORAGE_VALUE_LEN + STORAGE_PROOF_LEN_M_OLD  
 
-impl Serde<STORAGE_PROOF_INPUT_LEN_M> for ProofInput<STORAGE_MAX_PREFIXED_KEY_NIBBLE_LEN, MAX_STORAGE_VALUE_LEN, OLD_MAX_STORAGE_DEPTH_NO_LEAF_M, MAX_STORAGE_LEAF_LEN> {
-    fn serialize(self) -> [Field; STORAGE_PROOF_INPUT_LEN_M] {
-        let mut data: BoundedVec<Field, STORAGE_PROOF_INPUT_LEN_M> = BoundedVec::new();
+impl Serde<STORAGE_PROOF_INPUT_LEN_M_OLD> for ProofInput<STORAGE_MAX_PREFIXED_KEY_NIBBLE_LEN, MAX_STORAGE_VALUE_LEN, OLD_MAX_STORAGE_DEPTH_NO_LEAF_M, MAX_STORAGE_LEAF_LEN> {
+    fn serialize(self) -> [Field; STORAGE_PROOF_INPUT_LEN_M_OLD] {
+        let mut data: BoundedVec<Field, STORAGE_PROOF_INPUT_LEN_M_OLD> = BoundedVec::new();
         data.extend_from_array(self.key.serialize());
         data.extend_from_array(self.value.serialize());
         data.extend_from_array(self.proof.serialize());
         data.storage
     }
 
-    fn deserialize(data: [Field; STORAGE_PROOF_INPUT_LEN_M]) -> Self {
+    fn deserialize(data: [Field; STORAGE_PROOF_INPUT_LEN_M_OLD]) -> Self {
         let mut fragment = Fragment::from_array(data);
         let key = fragment.pop_front_array().deserialize();
         let value = fragment.pop_front_array().deserialize();
