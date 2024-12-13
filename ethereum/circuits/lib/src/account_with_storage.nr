@@ -15,6 +15,7 @@ use dep::std::hash::keccak256;
 
 global MAX_KEY_LEN: u32 = 32;
 global MAX_PREFIXED_KEY_NIBBLE_LEN: u32 = 66; // (MAX_KEY_LEN + 1) * 2
+global OLD_MAX_STORAGE_DEPTH_NO_LEAF_M = 6;
 global MAX_STORAGE_DEPTH_NO_LEAF_M = 7; // Emperically correct values to be determined after we scan ethereum state trie.
 
 global MAX_STORAGE_VALUE_LEN: u32 = 32; // Values taken from storageProofConfig in storage.ts.
